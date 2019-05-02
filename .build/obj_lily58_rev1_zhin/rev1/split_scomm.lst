@@ -1,0 +1,324 @@
+   1               		.file	"split_scomm.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.serial_master_init,"ax",@progbits
+  11               	.global	serial_master_init
+  13               	serial_master_init:
+  14               	.LFB0:
+  15               		.file 1 "keyboards/lily58/rev1/split_scomm.c"
+   1:keyboards/lily58/rev1/split_scomm.c **** #ifdef USE_SERIAL
+   2:keyboards/lily58/rev1/split_scomm.c **** #ifdef SERIAL_USE_MULTI_TRANSACTION
+   3:keyboards/lily58/rev1/split_scomm.c **** /* --- USE flexible API (using multi-type transaction function) --- */
+   4:keyboards/lily58/rev1/split_scomm.c **** 
+   5:keyboards/lily58/rev1/split_scomm.c **** #include <stdbool.h>
+   6:keyboards/lily58/rev1/split_scomm.c **** #include <stdint.h>
+   7:keyboards/lily58/rev1/split_scomm.c **** #include <stddef.h>
+   8:keyboards/lily58/rev1/split_scomm.c **** #include <split_scomm.h>
+   9:keyboards/lily58/rev1/split_scomm.c **** #include "serial.h"
+  10:keyboards/lily58/rev1/split_scomm.c **** #ifdef CONSOLE_ENABLE
+  11:keyboards/lily58/rev1/split_scomm.c ****   #include <print.h>
+  12:keyboards/lily58/rev1/split_scomm.c **** #endif
+  13:keyboards/lily58/rev1/split_scomm.c **** 
+  14:keyboards/lily58/rev1/split_scomm.c **** uint8_t volatile serial_slave_buffer[SERIAL_SLAVE_BUFFER_LENGTH] = {0};
+  15:keyboards/lily58/rev1/split_scomm.c **** uint8_t volatile serial_master_buffer[SERIAL_MASTER_BUFFER_LENGTH] = {0};
+  16:keyboards/lily58/rev1/split_scomm.c **** uint8_t volatile status_com = 0;
+  17:keyboards/lily58/rev1/split_scomm.c **** uint8_t volatile status1 = 0;
+  18:keyboards/lily58/rev1/split_scomm.c **** uint8_t slave_buffer_change_count = 0;
+  19:keyboards/lily58/rev1/split_scomm.c **** uint8_t s_change_old = 0xff;
+  20:keyboards/lily58/rev1/split_scomm.c **** uint8_t s_change_new = 0xff;
+  21:keyboards/lily58/rev1/split_scomm.c **** 
+  22:keyboards/lily58/rev1/split_scomm.c **** SSTD_t transactions[] = {
+  23:keyboards/lily58/rev1/split_scomm.c **** #define GET_SLAVE_STATUS 0
+  24:keyboards/lily58/rev1/split_scomm.c ****     /* master buffer not changed, only recive slave_buffer_change_count */
+  25:keyboards/lily58/rev1/split_scomm.c ****     { (uint8_t *)&status_com,
+  26:keyboards/lily58/rev1/split_scomm.c ****       0, NULL,
+  27:keyboards/lily58/rev1/split_scomm.c ****       sizeof(slave_buffer_change_count), &slave_buffer_change_count,
+  28:keyboards/lily58/rev1/split_scomm.c ****     },
+  29:keyboards/lily58/rev1/split_scomm.c **** #define PUT_MASTER_GET_SLAVE_STATUS 1
+  30:keyboards/lily58/rev1/split_scomm.c ****     /* master buffer changed need send, and recive slave_buffer_change_count  */
+  31:keyboards/lily58/rev1/split_scomm.c ****     { (uint8_t *)&status_com,
+  32:keyboards/lily58/rev1/split_scomm.c ****       sizeof(serial_master_buffer), (uint8_t *)serial_master_buffer,
+  33:keyboards/lily58/rev1/split_scomm.c ****       sizeof(slave_buffer_change_count), &slave_buffer_change_count,
+  34:keyboards/lily58/rev1/split_scomm.c ****     },
+  35:keyboards/lily58/rev1/split_scomm.c **** #define GET_SLAVE_BUFFER 2
+  36:keyboards/lily58/rev1/split_scomm.c ****     /* recive serial_slave_buffer */
+  37:keyboards/lily58/rev1/split_scomm.c ****     { (uint8_t *)&status1,
+  38:keyboards/lily58/rev1/split_scomm.c ****       0, NULL,
+  39:keyboards/lily58/rev1/split_scomm.c ****       sizeof(serial_slave_buffer), (uint8_t *)serial_slave_buffer
+  40:keyboards/lily58/rev1/split_scomm.c ****     }
+  41:keyboards/lily58/rev1/split_scomm.c **** };
+  42:keyboards/lily58/rev1/split_scomm.c **** 
+  43:keyboards/lily58/rev1/split_scomm.c **** void serial_master_init(void)
+  44:keyboards/lily58/rev1/split_scomm.c **** {
+  16               		.loc 1 44 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  45:keyboards/lily58/rev1/split_scomm.c ****     soft_serial_initiator_init(transactions, TID_LIMIT(transactions));
+  22               		.loc 1 45 0
+  23 0000 63E0      		ldi r22,lo8(3)
+  24 0002 70E0      		ldi r23,0
+  25 0004 80E0      		ldi r24,lo8(transactions)
+  26 0006 90E0      		ldi r25,hi8(transactions)
+  27 0008 0C94 0000 		jmp soft_serial_initiator_init
+  28               	.LVL0:
+  29               		.cfi_endproc
+  30               	.LFE0:
+  32               		.section	.text.serial_slave_init,"ax",@progbits
+  33               	.global	serial_slave_init
+  35               	serial_slave_init:
+  36               	.LFB1:
+  46:keyboards/lily58/rev1/split_scomm.c **** }
+  47:keyboards/lily58/rev1/split_scomm.c **** 
+  48:keyboards/lily58/rev1/split_scomm.c **** void serial_slave_init(void)
+  49:keyboards/lily58/rev1/split_scomm.c **** {
+  37               		.loc 1 49 0
+  38               		.cfi_startproc
+  39               	/* prologue: function */
+  40               	/* frame size = 0 */
+  41               	/* stack size = 0 */
+  42               	.L__stack_usage = 0
+  50:keyboards/lily58/rev1/split_scomm.c ****     soft_serial_target_init(transactions, TID_LIMIT(transactions));
+  43               		.loc 1 50 0
+  44 0000 63E0      		ldi r22,lo8(3)
+  45 0002 70E0      		ldi r23,0
+  46 0004 80E0      		ldi r24,lo8(transactions)
+  47 0006 90E0      		ldi r25,hi8(transactions)
+  48 0008 0C94 0000 		jmp soft_serial_target_init
+  49               	.LVL1:
+  50               		.cfi_endproc
+  51               	.LFE1:
+  53               		.section	.text.serial_update_buffers,"ax",@progbits
+  54               	.global	serial_update_buffers
+  56               	serial_update_buffers:
+  57               	.LFB2:
+  51:keyboards/lily58/rev1/split_scomm.c **** }
+  52:keyboards/lily58/rev1/split_scomm.c **** 
+  53:keyboards/lily58/rev1/split_scomm.c **** // 0 => no error
+  54:keyboards/lily58/rev1/split_scomm.c **** // 1 => slave did not respond
+  55:keyboards/lily58/rev1/split_scomm.c **** // 2 => checksum error
+  56:keyboards/lily58/rev1/split_scomm.c **** int serial_update_buffers(int master_update)
+  57:keyboards/lily58/rev1/split_scomm.c **** {
+  58               		.loc 1 57 0
+  59               		.cfi_startproc
+  60               	.LVL2:
+  61 0000 0F93      		push r16
+  62               	.LCFI0:
+  63               		.cfi_def_cfa_offset 3
+  64               		.cfi_offset 16, -2
+  65 0002 1F93      		push r17
+  66               	.LCFI1:
+  67               		.cfi_def_cfa_offset 4
+  68               		.cfi_offset 17, -3
+  69 0004 CF93      		push r28
+  70               	.LCFI2:
+  71               		.cfi_def_cfa_offset 5
+  72               		.cfi_offset 28, -4
+  73 0006 DF93      		push r29
+  74               	.LCFI3:
+  75               		.cfi_def_cfa_offset 6
+  76               		.cfi_offset 29, -5
+  77               	/* prologue: function */
+  78               	/* frame size = 0 */
+  79               	/* stack size = 4 */
+  80               	.L__stack_usage = 4
+  81 0008 8C01      		movw r16,r24
+  58:keyboards/lily58/rev1/split_scomm.c ****     int status, smatstatus;
+  59:keyboards/lily58/rev1/split_scomm.c ****     static int need_retry = 0;
+  60:keyboards/lily58/rev1/split_scomm.c **** 
+  61:keyboards/lily58/rev1/split_scomm.c ****     if( s_change_old != s_change_new ) {
+  82               		.loc 1 61 0
+  83 000a 9091 0000 		lds r25,s_change_old
+  84 000e 8091 0000 		lds r24,s_change_new
+  85               	.LVL3:
+  86 0012 9817      		cp r25,r24
+  87 0014 01F0      		breq .L9
+  62:keyboards/lily58/rev1/split_scomm.c ****         smatstatus = soft_serial_transaction(GET_SLAVE_BUFFER);
+  88               		.loc 1 62 0
+  89 0016 82E0      		ldi r24,lo8(2)
+  90 0018 90E0      		ldi r25,0
+  91 001a 0E94 0000 		call soft_serial_transaction
+  92               	.LVL4:
+  93 001e EC01      		movw r28,r24
+  94               	.LVL5:
+  63:keyboards/lily58/rev1/split_scomm.c ****         if( smatstatus == TRANSACTION_END ) {
+  95               		.loc 1 63 0
+  96 0020 892B      		or r24,r25
+  97 0022 01F4      		brne .L4
+  64:keyboards/lily58/rev1/split_scomm.c ****             s_change_old = s_change_new;
+  98               		.loc 1 64 0
+  99 0024 8091 0000 		lds r24,s_change_new
+ 100               	.LVL6:
+ 101 0028 8093 0000 		sts s_change_old,r24
+ 102 002c 00C0      		rjmp .L4
+ 103               	.LVL7:
+ 104               	.L9:
+  65:keyboards/lily58/rev1/split_scomm.c **** #ifdef CONSOLE_ENABLE
+  66:keyboards/lily58/rev1/split_scomm.c ****             uprintf("slave matrix = %b %b %b %b\n",
+  67:keyboards/lily58/rev1/split_scomm.c ****                     serial_slave_buffer[0], serial_slave_buffer[1],
+  68:keyboards/lily58/rev1/split_scomm.c ****                     serial_slave_buffer[2], serial_slave_buffer[3]);
+  69:keyboards/lily58/rev1/split_scomm.c **** #endif
+  70:keyboards/lily58/rev1/split_scomm.c ****         }
+  71:keyboards/lily58/rev1/split_scomm.c ****     } else {
+  72:keyboards/lily58/rev1/split_scomm.c ****         // serial_slave_buffer dosen't change
+  73:keyboards/lily58/rev1/split_scomm.c ****         smatstatus = TRANSACTION_END; // dummy status
+ 105               		.loc 1 73 0
+ 106 002e C0E0      		ldi r28,0
+ 107 0030 D0E0      		ldi r29,0
+ 108               	.L4:
+ 109               	.LVL8:
+  74:keyboards/lily58/rev1/split_scomm.c ****     }
+  75:keyboards/lily58/rev1/split_scomm.c **** 
+  76:keyboards/lily58/rev1/split_scomm.c ****     if( !master_update && !need_retry) {
+ 110               		.loc 1 76 0
+ 111 0032 012B      		or r16,r17
+ 112 0034 01F4      		brne .L5
+ 113               		.loc 1 76 0 is_stmt 0 discriminator 1
+ 114 0036 8091 0000 		lds r24,need_retry.1561
+ 115 003a 9091 0000 		lds r25,need_retry.1561+1
+ 116 003e 892B      		or r24,r25
+ 117 0040 01F4      		brne .L5
+  77:keyboards/lily58/rev1/split_scomm.c ****         status = soft_serial_transaction(GET_SLAVE_STATUS);
+ 118               		.loc 1 77 0 is_stmt 1
+ 119 0042 80E0      		ldi r24,0
+ 120 0044 90E0      		ldi r25,0
+ 121 0046 00C0      		rjmp .L10
+ 122               	.L5:
+  78:keyboards/lily58/rev1/split_scomm.c ****     } else {
+  79:keyboards/lily58/rev1/split_scomm.c ****         status = soft_serial_transaction(PUT_MASTER_GET_SLAVE_STATUS);
+ 123               		.loc 1 79 0
+ 124 0048 81E0      		ldi r24,lo8(1)
+ 125 004a 90E0      		ldi r25,0
+ 126               	.L10:
+ 127 004c 0E94 0000 		call soft_serial_transaction
+ 128               	.LVL9:
+  80:keyboards/lily58/rev1/split_scomm.c ****     }
+  81:keyboards/lily58/rev1/split_scomm.c ****     if( status == TRANSACTION_END ) {
+ 129               		.loc 1 81 0
+ 130 0050 892B      		or r24,r25
+ 131 0052 01F4      		brne .L7
+  82:keyboards/lily58/rev1/split_scomm.c ****         s_change_new = slave_buffer_change_count;
+ 132               		.loc 1 82 0
+ 133 0054 8091 0000 		lds r24,slave_buffer_change_count
+ 134               	.LVL10:
+ 135 0058 8093 0000 		sts s_change_new,r24
+  83:keyboards/lily58/rev1/split_scomm.c ****         need_retry = 0;
+ 136               		.loc 1 83 0
+ 137 005c 1092 0000 		sts need_retry.1561+1,__zero_reg__
+ 138 0060 1092 0000 		sts need_retry.1561,__zero_reg__
+ 139 0064 00C0      		rjmp .L8
+ 140               	.LVL11:
+ 141               	.L7:
+  84:keyboards/lily58/rev1/split_scomm.c ****     } else {
+  85:keyboards/lily58/rev1/split_scomm.c ****         need_retry = 1;
+ 142               		.loc 1 85 0
+ 143 0066 81E0      		ldi r24,lo8(1)
+ 144 0068 90E0      		ldi r25,0
+ 145               	.LVL12:
+ 146 006a 9093 0000 		sts need_retry.1561+1,r25
+ 147 006e 8093 0000 		sts need_retry.1561,r24
+ 148               	.L8:
+  86:keyboards/lily58/rev1/split_scomm.c ****     }
+  87:keyboards/lily58/rev1/split_scomm.c ****     return smatstatus;
+  88:keyboards/lily58/rev1/split_scomm.c **** }
+ 149               		.loc 1 88 0
+ 150 0072 CE01      		movw r24,r28
+ 151               	/* epilogue start */
+ 152 0074 DF91      		pop r29
+ 153 0076 CF91      		pop r28
+ 154               	.LVL13:
+ 155 0078 1F91      		pop r17
+ 156 007a 0F91      		pop r16
+ 157               	.LVL14:
+ 158 007c 0895      		ret
+ 159               		.cfi_endproc
+ 160               	.LFE2:
+ 162               		.section	.bss.need_retry.1561,"aw",@nobits
+ 165               	need_retry.1561:
+ 166 0000 0000      		.zero	2
+ 167               	.global	transactions
+ 168               		.section	.data.transactions,"aw",@progbits
+ 171               	transactions:
+ 172 0000 0000      		.word	status_com
+ 173 0002 00        		.byte	0
+ 174 0003 0000      		.word	0
+ 175 0005 01        		.byte	1
+ 176 0006 0000      		.word	slave_buffer_change_count
+ 177 0008 0000      		.word	status_com
+ 178 000a 05        		.byte	5
+ 179 000b 0000      		.word	serial_master_buffer
+ 180 000d 01        		.byte	1
+ 181 000e 0000      		.word	slave_buffer_change_count
+ 182 0010 0000      		.word	status1
+ 183 0012 00        		.byte	0
+ 184 0013 0000      		.word	0
+ 185 0015 05        		.byte	5
+ 186 0016 0000      		.word	serial_slave_buffer
+ 187               	.global	s_change_new
+ 188               		.section	.data.s_change_new,"aw",@progbits
+ 191               	s_change_new:
+ 192 0000 FF        		.byte	-1
+ 193               	.global	s_change_old
+ 194               		.section	.data.s_change_old,"aw",@progbits
+ 197               	s_change_old:
+ 198 0000 FF        		.byte	-1
+ 199               	.global	slave_buffer_change_count
+ 200               		.section	.bss.slave_buffer_change_count,"aw",@nobits
+ 203               	slave_buffer_change_count:
+ 204 0000 00        		.zero	1
+ 205               	.global	status1
+ 206               		.section	.bss.status1,"aw",@nobits
+ 209               	status1:
+ 210 0000 00        		.zero	1
+ 211               	.global	status_com
+ 212               		.section	.bss.status_com,"aw",@nobits
+ 215               	status_com:
+ 216 0000 00        		.zero	1
+ 217               	.global	serial_master_buffer
+ 218               		.section	.bss.serial_master_buffer,"aw",@nobits
+ 221               	serial_master_buffer:
+ 222 0000 0000 0000 		.zero	5
+ 222      00
+ 223               	.global	serial_slave_buffer
+ 224               		.section	.bss.serial_slave_buffer,"aw",@nobits
+ 227               	serial_slave_buffer:
+ 228 0000 0000 0000 		.zero	5
+ 228      00
+ 229               		.text
+ 230               	.Letext0:
+ 231               		.file 2 "keyboards/lily58/serial.h"
+ 232               		.file 3 "/usr/lib/avr/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 split_scomm.c
+     /tmp/ccdN8Tqp.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccdN8Tqp.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccdN8Tqp.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccdN8Tqp.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccdN8Tqp.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccdN8Tqp.s:13     .text.serial_master_init:0000000000000000 serial_master_init
+     /tmp/ccdN8Tqp.s:171    .data.transactions:0000000000000000 transactions
+     /tmp/ccdN8Tqp.s:35     .text.serial_slave_init:0000000000000000 serial_slave_init
+     /tmp/ccdN8Tqp.s:56     .text.serial_update_buffers:0000000000000000 serial_update_buffers
+     /tmp/ccdN8Tqp.s:197    .data.s_change_old:0000000000000000 s_change_old
+     /tmp/ccdN8Tqp.s:191    .data.s_change_new:0000000000000000 s_change_new
+     /tmp/ccdN8Tqp.s:165    .bss.need_retry.1561:0000000000000000 need_retry.1561
+     /tmp/ccdN8Tqp.s:203    .bss.slave_buffer_change_count:0000000000000000 slave_buffer_change_count
+     /tmp/ccdN8Tqp.s:215    .bss.status_com:0000000000000000 status_com
+     /tmp/ccdN8Tqp.s:221    .bss.serial_master_buffer:0000000000000000 serial_master_buffer
+     /tmp/ccdN8Tqp.s:209    .bss.status1:0000000000000000 status1
+     /tmp/ccdN8Tqp.s:227    .bss.serial_slave_buffer:0000000000000000 serial_slave_buffer
+
+UNDEFINED SYMBOLS
+soft_serial_initiator_init
+soft_serial_target_init
+soft_serial_transaction
+__do_copy_data
+__do_clear_bss

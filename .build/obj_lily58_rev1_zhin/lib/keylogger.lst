@@ -1,0 +1,354 @@
+   1               		.file	"keylogger.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.rodata.str1.1,"aMS",@progbits,1
+  11               	.LC0:
+  12 0000 2564 7825 		.string	"%dx%d, k%2d : %c"
+  12      642C 206B 
+  12      2532 6420 
+  12      3A20 2563 
+  12      00
+  13               		.section	.text.set_keylog,"ax",@progbits
+  14               	.global	set_keylog
+  16               	set_keylog:
+  17               	.LFB19:
+  18               		.file 1 "keyboards/lily58/lib/keylogger.c"
+   1:keyboards/lily58/lib/keylogger.c **** #include <stdio.h>
+   2:keyboards/lily58/lib/keylogger.c **** #include "lily58.h"
+   3:keyboards/lily58/lib/keylogger.c **** 
+   4:keyboards/lily58/lib/keylogger.c **** char keylog_str[24] = {};
+   5:keyboards/lily58/lib/keylogger.c **** char keylogs_str[21] = {};
+   6:keyboards/lily58/lib/keylogger.c **** int keylogs_str_idx = 0;
+   7:keyboards/lily58/lib/keylogger.c **** 
+   8:keyboards/lily58/lib/keylogger.c **** const char code_to_name[60] = {
+   9:keyboards/lily58/lib/keylogger.c ****     ' ', ' ', ' ', ' ', 'a', 'b', 'c', 'd', 'e', 'f',
+  10:keyboards/lily58/lib/keylogger.c ****     'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+  11:keyboards/lily58/lib/keylogger.c ****     'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  12:keyboards/lily58/lib/keylogger.c ****     '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+  13:keyboards/lily58/lib/keylogger.c ****     'R', 'E', 'B', 'T', ' ', ' ', ' ', ' ', ' ', ' ',
+  14:keyboards/lily58/lib/keylogger.c ****     ' ', ';', '\'', ' ', ',', '.', '/', ' ', ' ', ' '};
+  15:keyboards/lily58/lib/keylogger.c **** 
+  16:keyboards/lily58/lib/keylogger.c **** void set_keylog(uint16_t keycode, keyrecord_t *record) {
+  19               		.loc 1 16 0
+  20               		.cfi_startproc
+  21               	.LVL0:
+  22 0000 CF93      		push r28
+  23               	.LCFI0:
+  24               		.cfi_def_cfa_offset 3
+  25               		.cfi_offset 28, -2
+  26               	/* prologue: function */
+  27               	/* frame size = 0 */
+  28               	/* stack size = 1 */
+  29               	.L__stack_usage = 1
+  30               	.LVL1:
+  17:keyboards/lily58/lib/keylogger.c ****   char name = ' ';
+  18:keyboards/lily58/lib/keylogger.c ****   if (keycode < 60) {
+  31               		.loc 1 18 0
+  32 0002 8C33      		cpi r24,60
+  33 0004 9105      		cpc r25,__zero_reg__
+  34 0006 00F4      		brsh .L7
+  19:keyboards/lily58/lib/keylogger.c ****     name = code_to_name[keycode];
+  35               		.loc 1 19 0
+  36 0008 FC01      		movw r30,r24
+  37 000a E050      		subi r30,lo8(-(code_to_name))
+  38 000c F040      		sbci r31,hi8(-(code_to_name))
+  39 000e C081      		ld r28,Z
+  40               	.LVL2:
+  41 0010 00C0      		rjmp .L2
+  42               	.LVL3:
+  43               	.L7:
+  17:keyboards/lily58/lib/keylogger.c ****   char name = ' ';
+  44               		.loc 1 17 0
+  45 0012 C0E2      		ldi r28,lo8(32)
+  46               	.LVL4:
+  47               	.L2:
+  20:keyboards/lily58/lib/keylogger.c ****   }
+  21:keyboards/lily58/lib/keylogger.c **** 
+  22:keyboards/lily58/lib/keylogger.c ****   // update keylog
+  23:keyboards/lily58/lib/keylogger.c ****   snprintf(keylog_str, sizeof(keylog_str), "%dx%d, k%2d : %c",
+  48               		.loc 1 23 0
+  49 0014 1F92      		push __zero_reg__
+  50               	.LCFI1:
+  51               		.cfi_def_cfa_offset 4
+  52 0016 CF93      		push r28
+  53               	.LCFI2:
+  54               		.cfi_def_cfa_offset 5
+  55 0018 9F93      		push r25
+  56               	.LCFI3:
+  57               		.cfi_def_cfa_offset 6
+  58 001a 8F93      		push r24
+  59               	.LCFI4:
+  60               		.cfi_def_cfa_offset 7
+  61 001c FB01      		movw r30,r22
+  62 001e 8081      		ld r24,Z
+  63               	.LVL5:
+  64 0020 1F92      		push __zero_reg__
+  65               	.LCFI5:
+  66               		.cfi_def_cfa_offset 8
+  67 0022 8F93      		push r24
+  68               	.LCFI6:
+  69               		.cfi_def_cfa_offset 9
+  70 0024 8181      		ldd r24,Z+1
+  71 0026 1F92      		push __zero_reg__
+  72               	.LCFI7:
+  73               		.cfi_def_cfa_offset 10
+  74 0028 8F93      		push r24
+  75               	.LCFI8:
+  76               		.cfi_def_cfa_offset 11
+  77 002a 80E0      		ldi r24,lo8(.LC0)
+  78 002c 90E0      		ldi r25,hi8(.LC0)
+  79 002e 9F93      		push r25
+  80               	.LCFI9:
+  81               		.cfi_def_cfa_offset 12
+  82 0030 8F93      		push r24
+  83               	.LCFI10:
+  84               		.cfi_def_cfa_offset 13
+  85 0032 1F92      		push __zero_reg__
+  86               	.LCFI11:
+  87               		.cfi_def_cfa_offset 14
+  88 0034 88E1      		ldi r24,lo8(24)
+  89 0036 8F93      		push r24
+  90               	.LCFI12:
+  91               		.cfi_def_cfa_offset 15
+  92 0038 80E0      		ldi r24,lo8(keylog_str)
+  93 003a 90E0      		ldi r25,hi8(keylog_str)
+  94 003c 9F93      		push r25
+  95               	.LCFI13:
+  96               		.cfi_def_cfa_offset 16
+  97 003e 8F93      		push r24
+  98               	.LCFI14:
+  99               		.cfi_def_cfa_offset 17
+ 100 0040 0E94 0000 		call snprintf
+ 101               	.LVL6:
+  24:keyboards/lily58/lib/keylogger.c ****            record->event.key.row, record->event.key.col,
+  25:keyboards/lily58/lib/keylogger.c ****            keycode, name);
+  26:keyboards/lily58/lib/keylogger.c **** 
+  27:keyboards/lily58/lib/keylogger.c ****   // update keylogs
+  28:keyboards/lily58/lib/keylogger.c ****   if (keylogs_str_idx == sizeof(keylogs_str) - 1) {
+ 102               		.loc 1 28 0
+ 103 0044 8DB7      		in r24,__SP_L__
+ 104 0046 9EB7      		in r25,__SP_H__
+ 105 0048 0E96      		adiw r24,14
+ 106 004a 0FB6      		in __tmp_reg__,__SREG__
+ 107 004c F894      		cli
+ 108 004e 9EBF      		out __SP_H__,r25
+ 109 0050 0FBE      		out __SREG__,__tmp_reg__
+ 110 0052 8DBF      		out __SP_L__,r24
+ 111               	.LCFI15:
+ 112               		.cfi_def_cfa_offset 3
+ 113 0054 8091 0000 		lds r24,keylogs_str_idx
+ 114 0058 9091 0000 		lds r25,keylogs_str_idx+1
+ 115 005c 4497      		sbiw r24,20
+ 116 005e 01F0      		breq .L3
+ 117               	.L6:
+  29:keyboards/lily58/lib/keylogger.c ****     keylogs_str_idx = 0;
+  30:keyboards/lily58/lib/keylogger.c ****     for (int i = 0; i < sizeof(keylogs_str) - 1; i++) {
+  31:keyboards/lily58/lib/keylogger.c ****       keylogs_str[i] = ' ';
+  32:keyboards/lily58/lib/keylogger.c ****     }
+  33:keyboards/lily58/lib/keylogger.c ****   }
+  34:keyboards/lily58/lib/keylogger.c **** 
+  35:keyboards/lily58/lib/keylogger.c ****   keylogs_str[keylogs_str_idx] = name;
+ 118               		.loc 1 35 0
+ 119 0060 8091 0000 		lds r24,keylogs_str_idx
+ 120 0064 9091 0000 		lds r25,keylogs_str_idx+1
+ 121 0068 FC01      		movw r30,r24
+ 122 006a E050      		subi r30,lo8(-(keylogs_str))
+ 123 006c F040      		sbci r31,hi8(-(keylogs_str))
+ 124 006e C083      		st Z,r28
+  36:keyboards/lily58/lib/keylogger.c ****   keylogs_str_idx++;
+ 125               		.loc 1 36 0
+ 126 0070 0196      		adiw r24,1
+ 127 0072 9093 0000 		sts keylogs_str_idx+1,r25
+ 128 0076 8093 0000 		sts keylogs_str_idx,r24
+ 129               	/* epilogue start */
+  37:keyboards/lily58/lib/keylogger.c **** }
+ 130               		.loc 1 37 0
+ 131 007a CF91      		pop r28
+ 132               	.LVL7:
+ 133 007c 0895      		ret
+ 134               	.LVL8:
+ 135               	.L3:
+  29:keyboards/lily58/lib/keylogger.c ****     keylogs_str_idx = 0;
+ 136               		.loc 1 29 0
+ 137 007e 1092 0000 		sts keylogs_str_idx+1,__zero_reg__
+ 138 0082 1092 0000 		sts keylogs_str_idx,__zero_reg__
+ 139               	.LVL9:
+ 140 0086 E0E0      		ldi r30,lo8(keylogs_str)
+ 141 0088 F0E0      		ldi r31,hi8(keylogs_str)
+ 142               	.LBB2:
+  31:keyboards/lily58/lib/keylogger.c ****     }
+ 143               		.loc 1 31 0
+ 144 008a 80E2      		ldi r24,lo8(32)
+ 145               	.LVL10:
+ 146               	.L4:
+  30:keyboards/lily58/lib/keylogger.c ****       keylogs_str[i] = ' ';
+ 147               		.loc 1 30 0 discriminator 1
+ 148 008c 90E0      		ldi r25,hi8(keylogs_str+20)
+ 149 008e E030      		cpi r30,lo8(keylogs_str+20)
+ 150 0090 F907      		cpc r31,r25
+ 151 0092 01F0      		breq .L6
+  31:keyboards/lily58/lib/keylogger.c ****     }
+ 152               		.loc 1 31 0 discriminator 3
+ 153 0094 8193      		st Z+,r24
+ 154               	.LVL11:
+ 155 0096 00C0      		rjmp .L4
+ 156               	.LBE2:
+ 157               		.cfi_endproc
+ 158               	.LFE19:
+ 160               		.section	.text.read_keylog,"ax",@progbits
+ 161               	.global	read_keylog
+ 163               	read_keylog:
+ 164               	.LFB20:
+  38:keyboards/lily58/lib/keylogger.c **** 
+  39:keyboards/lily58/lib/keylogger.c **** const char *read_keylog(void) {
+ 165               		.loc 1 39 0
+ 166               		.cfi_startproc
+ 167               	/* prologue: function */
+ 168               	/* frame size = 0 */
+ 169               	/* stack size = 0 */
+ 170               	.L__stack_usage = 0
+  40:keyboards/lily58/lib/keylogger.c ****   return keylog_str;
+  41:keyboards/lily58/lib/keylogger.c **** }
+ 171               		.loc 1 41 0
+ 172 0000 80E0      		ldi r24,lo8(keylog_str)
+ 173 0002 90E0      		ldi r25,hi8(keylog_str)
+ 174 0004 0895      		ret
+ 175               		.cfi_endproc
+ 176               	.LFE20:
+ 178               		.section	.text.read_keylogs,"ax",@progbits
+ 179               	.global	read_keylogs
+ 181               	read_keylogs:
+ 182               	.LFB21:
+  42:keyboards/lily58/lib/keylogger.c **** 
+  43:keyboards/lily58/lib/keylogger.c **** const char *read_keylogs(void) {
+ 183               		.loc 1 43 0
+ 184               		.cfi_startproc
+ 185               	/* prologue: function */
+ 186               	/* frame size = 0 */
+ 187               	/* stack size = 0 */
+ 188               	.L__stack_usage = 0
+  44:keyboards/lily58/lib/keylogger.c ****   return keylogs_str;
+  45:keyboards/lily58/lib/keylogger.c **** }
+ 189               		.loc 1 45 0
+ 190 0000 80E0      		ldi r24,lo8(keylogs_str)
+ 191 0002 90E0      		ldi r25,hi8(keylogs_str)
+ 192 0004 0895      		ret
+ 193               		.cfi_endproc
+ 194               	.LFE21:
+ 196               	.global	code_to_name
+ 197               		.section	.rodata.code_to_name,"a",@progbits
+ 200               	code_to_name:
+ 201 0000 20        		.byte	32
+ 202 0001 20        		.byte	32
+ 203 0002 20        		.byte	32
+ 204 0003 20        		.byte	32
+ 205 0004 61        		.byte	97
+ 206 0005 62        		.byte	98
+ 207 0006 63        		.byte	99
+ 208 0007 64        		.byte	100
+ 209 0008 65        		.byte	101
+ 210 0009 66        		.byte	102
+ 211 000a 67        		.byte	103
+ 212 000b 68        		.byte	104
+ 213 000c 69        		.byte	105
+ 214 000d 6A        		.byte	106
+ 215 000e 6B        		.byte	107
+ 216 000f 6C        		.byte	108
+ 217 0010 6D        		.byte	109
+ 218 0011 6E        		.byte	110
+ 219 0012 6F        		.byte	111
+ 220 0013 70        		.byte	112
+ 221 0014 71        		.byte	113
+ 222 0015 72        		.byte	114
+ 223 0016 73        		.byte	115
+ 224 0017 74        		.byte	116
+ 225 0018 75        		.byte	117
+ 226 0019 76        		.byte	118
+ 227 001a 77        		.byte	119
+ 228 001b 78        		.byte	120
+ 229 001c 79        		.byte	121
+ 230 001d 7A        		.byte	122
+ 231 001e 31        		.byte	49
+ 232 001f 32        		.byte	50
+ 233 0020 33        		.byte	51
+ 234 0021 34        		.byte	52
+ 235 0022 35        		.byte	53
+ 236 0023 36        		.byte	54
+ 237 0024 37        		.byte	55
+ 238 0025 38        		.byte	56
+ 239 0026 39        		.byte	57
+ 240 0027 30        		.byte	48
+ 241 0028 52        		.byte	82
+ 242 0029 45        		.byte	69
+ 243 002a 42        		.byte	66
+ 244 002b 54        		.byte	84
+ 245 002c 20        		.byte	32
+ 246 002d 20        		.byte	32
+ 247 002e 20        		.byte	32
+ 248 002f 20        		.byte	32
+ 249 0030 20        		.byte	32
+ 250 0031 20        		.byte	32
+ 251 0032 20        		.byte	32
+ 252 0033 3B        		.byte	59
+ 253 0034 27        		.byte	39
+ 254 0035 20        		.byte	32
+ 255 0036 2C        		.byte	44
+ 256 0037 2E        		.byte	46
+ 257 0038 2F        		.byte	47
+ 258 0039 20        		.byte	32
+ 259 003a 20        		.byte	32
+ 260 003b 20        		.byte	32
+ 261               	.global	keylogs_str_idx
+ 262               		.section	.bss.keylogs_str_idx,"aw",@nobits
+ 265               	keylogs_str_idx:
+ 266 0000 0000      		.zero	2
+ 267               	.global	keylogs_str
+ 268               		.section	.bss.keylogs_str,"aw",@nobits
+ 271               	keylogs_str:
+ 272 0000 0000 0000 		.zero	21
+ 272      0000 0000 
+ 272      0000 0000 
+ 272      0000 0000 
+ 272      0000 0000 
+ 273               	.global	keylog_str
+ 274               		.section	.bss.keylog_str,"aw",@nobits
+ 277               	keylog_str:
+ 278 0000 0000 0000 		.zero	24
+ 278      0000 0000 
+ 278      0000 0000 
+ 278      0000 0000 
+ 278      0000 0000 
+ 279               		.text
+ 280               	.Letext0:
+ 281               		.file 2 "/usr/lib/avr/include/stdint.h"
+ 282               		.file 3 "/usr/lib/gcc/avr/4.9.2/include/stddef.h"
+ 283               		.file 4 "tmk_core/common/keyboard.h"
+ 284               		.file 5 "tmk_core/common/action.h"
+ 285               		.file 6 "tmk_core/common/report.h"
+ 286               		.file 7 "tmk_core/common/action_util.h"
+ 287               		.file 8 "/usr/lib/avr/include/stdio.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 keylogger.c
+     /tmp/ccANN5qy.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccANN5qy.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccANN5qy.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccANN5qy.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccANN5qy.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccANN5qy.s:16     .text.set_keylog:0000000000000000 set_keylog
+     /tmp/ccANN5qy.s:200    .rodata.code_to_name:0000000000000000 code_to_name
+     /tmp/ccANN5qy.s:277    .bss.keylog_str:0000000000000000 keylog_str
+     /tmp/ccANN5qy.s:265    .bss.keylogs_str_idx:0000000000000000 keylogs_str_idx
+     /tmp/ccANN5qy.s:271    .bss.keylogs_str:0000000000000000 keylogs_str
+     /tmp/ccANN5qy.s:163    .text.read_keylog:0000000000000000 read_keylog
+     /tmp/ccANN5qy.s:181    .text.read_keylogs:0000000000000000 read_keylogs
+
+UNDEFINED SYMBOLS
+snprintf
+__do_copy_data
+__do_clear_bss

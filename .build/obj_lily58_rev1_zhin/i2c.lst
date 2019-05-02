@@ -1,0 +1,605 @@
+   1               		.file	"i2c.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.i2c_delay,"ax",@progbits
+  12               	i2c_delay:
+  13               	.LFB6:
+  14               		.file 1 "keyboards/lily58/i2c.c"
+   1:keyboards/lily58/i2c.c **** #include <util/twi.h>
+   2:keyboards/lily58/i2c.c **** #include <avr/io.h>
+   3:keyboards/lily58/i2c.c **** #include <stdlib.h>
+   4:keyboards/lily58/i2c.c **** #include <avr/interrupt.h>
+   5:keyboards/lily58/i2c.c **** #include <util/twi.h>
+   6:keyboards/lily58/i2c.c **** #include <stdbool.h>
+   7:keyboards/lily58/i2c.c **** #include "i2c.h"
+   8:keyboards/lily58/i2c.c **** 
+   9:keyboards/lily58/i2c.c **** #ifdef USE_I2C
+  10:keyboards/lily58/i2c.c **** 
+  11:keyboards/lily58/i2c.c **** // Limits the amount of we wait for any one i2c transaction.
+  12:keyboards/lily58/i2c.c **** // Since were running SCL line 100kHz (=> 10μs/bit), and each transactions is
+  13:keyboards/lily58/i2c.c **** // 9 bits, a single transaction will take around 90μs to complete.
+  14:keyboards/lily58/i2c.c **** //
+  15:keyboards/lily58/i2c.c **** // (F_CPU/SCL_CLOCK)  =>  # of μC cycles to transfer a bit
+  16:keyboards/lily58/i2c.c **** // poll loop takes at least 8 clock cycles to execute
+  17:keyboards/lily58/i2c.c **** #define I2C_LOOP_TIMEOUT (9+1)*(F_CPU/SCL_CLOCK)/8
+  18:keyboards/lily58/i2c.c **** 
+  19:keyboards/lily58/i2c.c **** #define BUFFER_POS_INC() (slave_buffer_pos = (slave_buffer_pos+1)%SLAVE_BUFFER_SIZE)
+  20:keyboards/lily58/i2c.c **** 
+  21:keyboards/lily58/i2c.c **** volatile uint8_t i2c_slave_buffer[SLAVE_BUFFER_SIZE];
+  22:keyboards/lily58/i2c.c **** 
+  23:keyboards/lily58/i2c.c **** static volatile uint8_t slave_buffer_pos;
+  24:keyboards/lily58/i2c.c **** static volatile bool slave_has_register_set = false;
+  25:keyboards/lily58/i2c.c **** 
+  26:keyboards/lily58/i2c.c **** // Wait for an i2c operation to finish
+  27:keyboards/lily58/i2c.c **** inline static
+  28:keyboards/lily58/i2c.c **** void i2c_delay(void) {
+  15               		.loc 1 28 0
+  16               		.cfi_startproc
+  17               	/* prologue: function */
+  18               	/* frame size = 0 */
+  19               	/* stack size = 0 */
+  20               	.L__stack_usage = 0
+  21               	.LVL0:
+  29:keyboards/lily58/i2c.c ****   uint16_t lim = 0;
+  30:keyboards/lily58/i2c.c ****   while(!(TWCR & (1<<TWINT)) && lim < I2C_LOOP_TIMEOUT)
+  22               		.loc 1 30 0
+  23 0000 83E3      		ldi r24,lo8(51)
+  24 0002 90E0      		ldi r25,0
+  25               	.LVL1:
+  26               	.L3:
+  27 0004 2091 BC00 		lds r18,188
+  28 0008 27FD      		sbrc r18,7
+  29 000a 00C0      		rjmp .L1
+  30 000c 0197      		sbiw r24,1
+  31               	.LVL2:
+  32               		.loc 1 30 0 is_stmt 0 discriminator 1
+  33 000e 01F4      		brne .L3
+  34               	.LVL3:
+  35               	.L1:
+  36 0010 0895      		ret
+  37               		.cfi_endproc
+  38               	.LFE6:
+  40               		.section	.text.i2c_master_init,"ax",@progbits
+  41               	.global	i2c_master_init
+  43               	i2c_master_init:
+  44               	.LFB7:
+  31:keyboards/lily58/i2c.c ****     lim++;
+  32:keyboards/lily58/i2c.c **** 
+  33:keyboards/lily58/i2c.c ****   // easier way, but will wait slightly longer
+  34:keyboards/lily58/i2c.c ****   // _delay_us(100);
+  35:keyboards/lily58/i2c.c **** }
+  36:keyboards/lily58/i2c.c **** 
+  37:keyboards/lily58/i2c.c **** // Setup twi to run at 100kHz or 400kHz (see ./i2c.h SCL_CLOCK)
+  38:keyboards/lily58/i2c.c **** void i2c_master_init(void) {
+  45               		.loc 1 38 0 is_stmt 1
+  46               		.cfi_startproc
+  47               	/* prologue: function */
+  48               	/* frame size = 0 */
+  49               	/* stack size = 0 */
+  50               	.L__stack_usage = 0
+  39:keyboards/lily58/i2c.c ****   // no prescaler
+  40:keyboards/lily58/i2c.c ****   TWSR = 0;
+  51               		.loc 1 40 0
+  52 0000 1092 B900 		sts 185,__zero_reg__
+  41:keyboards/lily58/i2c.c ****   // Set TWI clock frequency to SCL_CLOCK. Need TWBR>10.
+  42:keyboards/lily58/i2c.c ****   // Check datasheets for more info.
+  43:keyboards/lily58/i2c.c ****   TWBR = ((F_CPU/SCL_CLOCK)-16)/2;
+  53               		.loc 1 43 0
+  54 0004 8CE0      		ldi r24,lo8(12)
+  55 0006 8093 B800 		sts 184,r24
+  56 000a 0895      		ret
+  57               		.cfi_endproc
+  58               	.LFE7:
+  60               		.section	.text.i2c_master_start,"ax",@progbits
+  61               	.global	i2c_master_start
+  63               	i2c_master_start:
+  64               	.LFB8:
+  44:keyboards/lily58/i2c.c **** }
+  45:keyboards/lily58/i2c.c **** 
+  46:keyboards/lily58/i2c.c **** // Start a transaction with the given i2c slave address. The direction of the
+  47:keyboards/lily58/i2c.c **** // transfer is set with I2C_READ and I2C_WRITE.
+  48:keyboards/lily58/i2c.c **** // returns: 0 => success
+  49:keyboards/lily58/i2c.c **** //          1 => error
+  50:keyboards/lily58/i2c.c **** uint8_t i2c_master_start(uint8_t address) {
+  65               		.loc 1 50 0
+  66               		.cfi_startproc
+  67               	.LVL4:
+  68 0000 CF93      		push r28
+  69               	.LCFI0:
+  70               		.cfi_def_cfa_offset 3
+  71               		.cfi_offset 28, -2
+  72 0002 DF93      		push r29
+  73               	.LCFI1:
+  74               		.cfi_def_cfa_offset 4
+  75               		.cfi_offset 29, -3
+  76 0004 1F92      		push __zero_reg__
+  77               	.LCFI2:
+  78               		.cfi_def_cfa_offset 5
+  79 0006 CDB7      		in r28,__SP_L__
+  80 0008 DEB7      		in r29,__SP_H__
+  81               	.LCFI3:
+  82               		.cfi_def_cfa_register 28
+  83               	/* prologue: function */
+  84               	/* frame size = 1 */
+  85               	/* stack size = 3 */
+  86               	.L__stack_usage = 3
+  51:keyboards/lily58/i2c.c ****   TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTA);
+  87               		.loc 1 51 0
+  88 000a 94EA      		ldi r25,lo8(-92)
+  89 000c 9093 BC00 		sts 188,r25
+  52:keyboards/lily58/i2c.c **** 
+  53:keyboards/lily58/i2c.c ****   i2c_delay();
+  90               		.loc 1 53 0
+  91 0010 8983      		std Y+1,r24
+  92 0012 0E94 0000 		call i2c_delay
+  93               	.LVL5:
+  54:keyboards/lily58/i2c.c **** 
+  55:keyboards/lily58/i2c.c ****   // check that we started successfully
+  56:keyboards/lily58/i2c.c ****   if ( (TW_STATUS != TW_START) && (TW_STATUS != TW_REP_START))
+  94               		.loc 1 56 0
+  95 0016 9091 B900 		lds r25,185
+  96 001a 987F      		andi r25,lo8(-8)
+  97 001c 8981      		ldd r24,Y+1
+  98 001e 9830      		cpi r25,lo8(8)
+  99 0020 01F0      		breq .L8
+ 100               		.loc 1 56 0 is_stmt 0 discriminator 1
+ 101 0022 9091 B900 		lds r25,185
+ 102 0026 987F      		andi r25,lo8(-8)
+ 103 0028 9031      		cpi r25,lo8(16)
+ 104 002a 01F0      		breq .L8
+ 105               	.L10:
+  57:keyboards/lily58/i2c.c ****     return 1;
+ 106               		.loc 1 57 0 is_stmt 1
+ 107 002c 81E0      		ldi r24,lo8(1)
+ 108 002e 00C0      		rjmp .L9
+ 109               	.L8:
+  58:keyboards/lily58/i2c.c **** 
+  59:keyboards/lily58/i2c.c ****   TWDR = address;
+ 110               		.loc 1 59 0
+ 111 0030 8093 BB00 		sts 187,r24
+  60:keyboards/lily58/i2c.c ****   TWCR = (1<<TWINT) | (1<<TWEN);
+ 112               		.loc 1 60 0
+ 113 0034 84E8      		ldi r24,lo8(-124)
+ 114 0036 8093 BC00 		sts 188,r24
+  61:keyboards/lily58/i2c.c **** 
+  62:keyboards/lily58/i2c.c ****   i2c_delay();
+ 115               		.loc 1 62 0
+ 116 003a 0E94 0000 		call i2c_delay
+ 117               	.LVL6:
+  63:keyboards/lily58/i2c.c **** 
+  64:keyboards/lily58/i2c.c ****   if ( (TW_STATUS != TW_MT_SLA_ACK) && (TW_STATUS != TW_MR_SLA_ACK) )
+ 118               		.loc 1 64 0
+ 119 003e 8091 B900 		lds r24,185
+ 120 0042 887F      		andi r24,lo8(-8)
+ 121 0044 8831      		cpi r24,lo8(24)
+ 122 0046 01F0      		breq .L11
+ 123               		.loc 1 64 0 is_stmt 0 discriminator 1
+ 124 0048 8091 B900 		lds r24,185
+ 125 004c 887F      		andi r24,lo8(-8)
+ 126 004e 8034      		cpi r24,lo8(64)
+ 127 0050 01F4      		brne .L10
+ 128               	.L11:
+  65:keyboards/lily58/i2c.c ****     return 1; // slave did not acknowledge
+  66:keyboards/lily58/i2c.c ****   else
+  67:keyboards/lily58/i2c.c ****     return 0; // success
+ 129               		.loc 1 67 0 is_stmt 1
+ 130 0052 80E0      		ldi r24,0
+ 131               	.L9:
+ 132               	/* epilogue start */
+  68:keyboards/lily58/i2c.c **** }
+ 133               		.loc 1 68 0
+ 134 0054 0F90      		pop __tmp_reg__
+ 135 0056 DF91      		pop r29
+ 136 0058 CF91      		pop r28
+ 137 005a 0895      		ret
+ 138               		.cfi_endproc
+ 139               	.LFE8:
+ 141               		.section	.text.i2c_master_stop,"ax",@progbits
+ 142               	.global	i2c_master_stop
+ 144               	i2c_master_stop:
+ 145               	.LFB9:
+  69:keyboards/lily58/i2c.c **** 
+  70:keyboards/lily58/i2c.c **** 
+  71:keyboards/lily58/i2c.c **** // Finish the i2c transaction.
+  72:keyboards/lily58/i2c.c **** void i2c_master_stop(void) {
+ 146               		.loc 1 72 0
+ 147               		.cfi_startproc
+ 148               	/* prologue: function */
+ 149               	/* frame size = 0 */
+ 150               	/* stack size = 0 */
+ 151               	.L__stack_usage = 0
+  73:keyboards/lily58/i2c.c ****   TWCR = (1<<TWINT) | (1<<TWEN) | (1<<TWSTO);
+ 152               		.loc 1 73 0
+ 153 0000 84E9      		ldi r24,lo8(-108)
+ 154 0002 8093 BC00 		sts 188,r24
+ 155               	.LVL7:
+  74:keyboards/lily58/i2c.c **** 
+  75:keyboards/lily58/i2c.c ****   uint16_t lim = 0;
+  76:keyboards/lily58/i2c.c ****   while(!(TWCR & (1<<TWSTO)) && lim < I2C_LOOP_TIMEOUT)
+ 156               		.loc 1 76 0
+ 157 0006 83E3      		ldi r24,lo8(51)
+ 158 0008 90E0      		ldi r25,0
+ 159               	.LVL8:
+ 160               	.L20:
+ 161 000a 2091 BC00 		lds r18,188
+ 162 000e 24FD      		sbrc r18,4
+ 163 0010 00C0      		rjmp .L18
+ 164 0012 0197      		sbiw r24,1
+ 165               	.LVL9:
+ 166               		.loc 1 76 0 is_stmt 0 discriminator 1
+ 167 0014 01F4      		brne .L20
+ 168               	.LVL10:
+ 169               	.L18:
+ 170 0016 0895      		ret
+ 171               		.cfi_endproc
+ 172               	.LFE9:
+ 174               		.section	.text.i2c_master_write,"ax",@progbits
+ 175               	.global	i2c_master_write
+ 177               	i2c_master_write:
+ 178               	.LFB10:
+  77:keyboards/lily58/i2c.c ****     lim++;
+  78:keyboards/lily58/i2c.c **** }
+  79:keyboards/lily58/i2c.c **** 
+  80:keyboards/lily58/i2c.c **** // Write one byte to the i2c slave.
+  81:keyboards/lily58/i2c.c **** // returns 0 => slave ACK
+  82:keyboards/lily58/i2c.c **** //         1 => slave NACK
+  83:keyboards/lily58/i2c.c **** uint8_t i2c_master_write(uint8_t data) {
+ 179               		.loc 1 83 0 is_stmt 1
+ 180               		.cfi_startproc
+ 181               	.LVL11:
+ 182               	/* prologue: function */
+ 183               	/* frame size = 0 */
+ 184               	/* stack size = 0 */
+ 185               	.L__stack_usage = 0
+  84:keyboards/lily58/i2c.c ****   TWDR = data;
+ 186               		.loc 1 84 0
+ 187 0000 8093 BB00 		sts 187,r24
+  85:keyboards/lily58/i2c.c ****   TWCR = (1<<TWINT) | (1<<TWEN);
+ 188               		.loc 1 85 0
+ 189 0004 84E8      		ldi r24,lo8(-124)
+ 190               	.LVL12:
+ 191 0006 8093 BC00 		sts 188,r24
+ 192               	.LVL13:
+  86:keyboards/lily58/i2c.c **** 
+  87:keyboards/lily58/i2c.c ****   i2c_delay();
+ 193               		.loc 1 87 0
+ 194 000a 0E94 0000 		call i2c_delay
+ 195               	.LVL14:
+  88:keyboards/lily58/i2c.c **** 
+  89:keyboards/lily58/i2c.c ****   // check if the slave acknowledged us
+  90:keyboards/lily58/i2c.c ****   return (TW_STATUS == TW_MT_DATA_ACK) ? 0 : 1;
+ 196               		.loc 1 90 0
+ 197 000e 9091 B900 		lds r25,185
+ 198 0012 987F      		andi r25,lo8(-8)
+ 199 0014 81E0      		ldi r24,lo8(1)
+ 200 0016 9832      		cpi r25,lo8(40)
+ 201 0018 01F4      		brne .L23
+ 202 001a 80E0      		ldi r24,0
+ 203               	.L23:
+  91:keyboards/lily58/i2c.c **** }
+ 204               		.loc 1 91 0
+ 205 001c 0895      		ret
+ 206               		.cfi_endproc
+ 207               	.LFE10:
+ 209               		.section	.text.i2c_master_read,"ax",@progbits
+ 210               	.global	i2c_master_read
+ 212               	i2c_master_read:
+ 213               	.LFB11:
+  92:keyboards/lily58/i2c.c **** 
+  93:keyboards/lily58/i2c.c **** // Read one byte from the i2c slave. If ack=1 the slave is acknowledged,
+  94:keyboards/lily58/i2c.c **** // if ack=0 the acknowledge bit is not set.
+  95:keyboards/lily58/i2c.c **** // returns: byte read from i2c device
+  96:keyboards/lily58/i2c.c **** uint8_t i2c_master_read(int ack) {
+ 214               		.loc 1 96 0
+ 215               		.cfi_startproc
+ 216               	.LVL15:
+ 217               	/* prologue: function */
+ 218               	/* frame size = 0 */
+ 219               	/* stack size = 0 */
+ 220               	.L__stack_usage = 0
+  97:keyboards/lily58/i2c.c ****   TWCR = (1<<TWINT) | (1<<TWEN) | (ack<<TWEA);
+ 221               		.loc 1 97 0
+ 222 0000 26E0      		ldi r18,6
+ 223               		1:
+ 224 0002 880F      		lsl r24
+ 225 0004 991F      		rol r25
+ 226 0006 2A95      		dec r18
+ 227 0008 01F4      		brne 1b
+ 228               	.LVL16:
+ 229 000a 8468      		ori r24,lo8(-124)
+ 230 000c 8093 BC00 		sts 188,r24
+  98:keyboards/lily58/i2c.c **** 
+  99:keyboards/lily58/i2c.c ****   i2c_delay();
+ 231               		.loc 1 99 0
+ 232 0010 0E94 0000 		call i2c_delay
+ 233               	.LVL17:
+ 100:keyboards/lily58/i2c.c ****   return TWDR;
+ 234               		.loc 1 100 0
+ 235 0014 8091 BB00 		lds r24,187
+ 101:keyboards/lily58/i2c.c **** }
+ 236               		.loc 1 101 0
+ 237 0018 0895      		ret
+ 238               		.cfi_endproc
+ 239               	.LFE11:
+ 241               		.section	.text.i2c_reset_state,"ax",@progbits
+ 242               	.global	i2c_reset_state
+ 244               	i2c_reset_state:
+ 245               	.LFB12:
+ 102:keyboards/lily58/i2c.c **** 
+ 103:keyboards/lily58/i2c.c **** void i2c_reset_state(void) {
+ 246               		.loc 1 103 0
+ 247               		.cfi_startproc
+ 248               	/* prologue: function */
+ 249               	/* frame size = 0 */
+ 250               	/* stack size = 0 */
+ 251               	.L__stack_usage = 0
+ 104:keyboards/lily58/i2c.c ****   TWCR = 0;
+ 252               		.loc 1 104 0
+ 253 0000 1092 BC00 		sts 188,__zero_reg__
+ 254 0004 0895      		ret
+ 255               		.cfi_endproc
+ 256               	.LFE12:
+ 258               		.section	.text.i2c_slave_init,"ax",@progbits
+ 259               	.global	i2c_slave_init
+ 261               	i2c_slave_init:
+ 262               	.LFB13:
+ 105:keyboards/lily58/i2c.c **** }
+ 106:keyboards/lily58/i2c.c **** 
+ 107:keyboards/lily58/i2c.c **** void i2c_slave_init(uint8_t address) {
+ 263               		.loc 1 107 0
+ 264               		.cfi_startproc
+ 265               	.LVL18:
+ 266               	/* prologue: function */
+ 267               	/* frame size = 0 */
+ 268               	/* stack size = 0 */
+ 269               	.L__stack_usage = 0
+ 108:keyboards/lily58/i2c.c ****   TWAR = address << 0; // slave i2c address
+ 270               		.loc 1 108 0
+ 271 0000 8093 BA00 		sts 186,r24
+ 109:keyboards/lily58/i2c.c ****   // TWEN  - twi enable
+ 110:keyboards/lily58/i2c.c ****   // TWEA  - enable address acknowledgement
+ 111:keyboards/lily58/i2c.c ****   // TWINT - twi interrupt flag
+ 112:keyboards/lily58/i2c.c ****   // TWIE  - enable the twi interrupt
+ 113:keyboards/lily58/i2c.c ****   TWCR = (1<<TWIE) | (1<<TWEA) | (1<<TWINT) | (1<<TWEN);
+ 272               		.loc 1 113 0
+ 273 0004 85EC      		ldi r24,lo8(-59)
+ 274               	.LVL19:
+ 275 0006 8093 BC00 		sts 188,r24
+ 276               	.LVL20:
+ 277 000a 0895      		ret
+ 278               		.cfi_endproc
+ 279               	.LFE13:
+ 281               		.section	.text.__vector_36,"ax",@progbits
+ 282               	.global	__vector_36
+ 284               	__vector_36:
+ 285               	.LFB14:
+ 114:keyboards/lily58/i2c.c **** }
+ 115:keyboards/lily58/i2c.c **** 
+ 116:keyboards/lily58/i2c.c **** ISR(TWI_vect);
+ 117:keyboards/lily58/i2c.c **** 
+ 118:keyboards/lily58/i2c.c **** ISR(TWI_vect) {
+ 286               		.loc 1 118 0
+ 287               		.cfi_startproc
+ 288 0000 1F92      		push r1
+ 289               	.LCFI4:
+ 290               		.cfi_def_cfa_offset 3
+ 291               		.cfi_offset 1, -2
+ 292 0002 0F92      		push r0
+ 293               	.LCFI5:
+ 294               		.cfi_def_cfa_offset 4
+ 295               		.cfi_offset 0, -3
+ 296 0004 0FB6      		in r0,__SREG__
+ 297 0006 0F92      		push r0
+ 298 0008 1124      		clr __zero_reg__
+ 299 000a 8F93      		push r24
+ 300               	.LCFI6:
+ 301               		.cfi_def_cfa_offset 5
+ 302               		.cfi_offset 24, -4
+ 303 000c 9F93      		push r25
+ 304               	.LCFI7:
+ 305               		.cfi_def_cfa_offset 6
+ 306               		.cfi_offset 25, -5
+ 307 000e EF93      		push r30
+ 308               	.LCFI8:
+ 309               		.cfi_def_cfa_offset 7
+ 310               		.cfi_offset 30, -6
+ 311 0010 FF93      		push r31
+ 312               	.LCFI9:
+ 313               		.cfi_def_cfa_offset 8
+ 314               		.cfi_offset 31, -7
+ 315               	/* prologue: Signal */
+ 316               	/* frame size = 0 */
+ 317               	/* stack size = 7 */
+ 318               	.L__stack_usage = 7
+ 319               	.LVL21:
+ 119:keyboards/lily58/i2c.c ****   uint8_t ack = 1;
+ 120:keyboards/lily58/i2c.c ****   switch(TW_STATUS) {
+ 320               		.loc 1 120 0
+ 321 0012 8091 B900 		lds r24,185
+ 322 0016 887F      		andi r24,lo8(-8)
+ 323 0018 8038      		cpi r24,lo8(-128)
+ 324 001a 01F0      		breq .L29
+ 325 001c 00F4      		brsh .L30
+ 326 001e 8823      		tst r24
+ 327 0020 01F0      		breq .L31
+ 328 0022 8036      		cpi r24,lo8(96)
+ 329 0024 01F4      		brne .L36
+ 121:keyboards/lily58/i2c.c ****     case TW_SR_SLA_ACK:
+ 122:keyboards/lily58/i2c.c ****       // this device has been addressed as a slave receiver
+ 123:keyboards/lily58/i2c.c ****       slave_has_register_set = false;
+ 330               		.loc 1 123 0
+ 331 0026 1092 0000 		sts slave_has_register_set,__zero_reg__
+ 332 002a 00C0      		rjmp .L36
+ 333               	.L30:
+ 120:keyboards/lily58/i2c.c ****     case TW_SR_SLA_ACK:
+ 334               		.loc 1 120 0
+ 335 002c 883A      		cpi r24,lo8(-88)
+ 336 002e 01F0      		breq .L33
+ 337 0030 883B      		cpi r24,lo8(-72)
+ 338 0032 01F0      		breq .L33
+ 339 0034 00C0      		rjmp .L36
+ 340               	.L29:
+ 124:keyboards/lily58/i2c.c ****       break;
+ 125:keyboards/lily58/i2c.c **** 
+ 126:keyboards/lily58/i2c.c ****     case TW_SR_DATA_ACK:
+ 127:keyboards/lily58/i2c.c ****       // this device has received data as a slave receiver
+ 128:keyboards/lily58/i2c.c ****       // The first byte that we receive in this transaction sets the location
+ 129:keyboards/lily58/i2c.c ****       // of the read/write location of the slaves memory that it exposes over
+ 130:keyboards/lily58/i2c.c ****       // i2c.  After that, bytes will be written at slave_buffer_pos, incrementing
+ 131:keyboards/lily58/i2c.c ****       // slave_buffer_pos after each write.
+ 132:keyboards/lily58/i2c.c ****       if(!slave_has_register_set) {
+ 341               		.loc 1 132 0
+ 342 0036 8091 0000 		lds r24,slave_has_register_set
+ 343 003a 8111      		cpse r24,__zero_reg__
+ 344 003c 00C0      		rjmp .L34
+ 133:keyboards/lily58/i2c.c ****         slave_buffer_pos = TWDR;
+ 345               		.loc 1 133 0
+ 346 003e 8091 BB00 		lds r24,187
+ 347 0042 8093 0000 		sts slave_buffer_pos,r24
+ 134:keyboards/lily58/i2c.c ****         // don't acknowledge the master if this memory loctaion is out of bounds
+ 135:keyboards/lily58/i2c.c ****         if ( slave_buffer_pos >= SLAVE_BUFFER_SIZE ) {
+ 348               		.loc 1 135 0
+ 349 0046 8091 0000 		lds r24,slave_buffer_pos
+ 350 004a 8031      		cpi r24,lo8(16)
+ 351 004c 00F0      		brlo .L37
+ 352               	.LVL22:
+ 136:keyboards/lily58/i2c.c ****           ack = 0;
+ 137:keyboards/lily58/i2c.c ****           slave_buffer_pos = 0;
+ 353               		.loc 1 137 0
+ 354 004e 1092 0000 		sts slave_buffer_pos,__zero_reg__
+ 136:keyboards/lily58/i2c.c ****           ack = 0;
+ 355               		.loc 1 136 0
+ 356 0052 80E0      		ldi r24,0
+ 357 0054 00C0      		rjmp .L35
+ 358               	.LVL23:
+ 359               	.L37:
+ 119:keyboards/lily58/i2c.c ****   switch(TW_STATUS) {
+ 360               		.loc 1 119 0
+ 361 0056 81E0      		ldi r24,lo8(1)
+ 362               	.LVL24:
+ 363               	.L35:
+ 138:keyboards/lily58/i2c.c ****         }
+ 139:keyboards/lily58/i2c.c ****         slave_has_register_set = true;
+ 364               		.loc 1 139 0
+ 365 0058 91E0      		ldi r25,lo8(1)
+ 366 005a 9093 0000 		sts slave_has_register_set,r25
+ 367 005e 00C0      		rjmp .L28
+ 368               	.LVL25:
+ 369               	.L34:
+ 140:keyboards/lily58/i2c.c ****       } else {
+ 141:keyboards/lily58/i2c.c ****         i2c_slave_buffer[slave_buffer_pos] = TWDR;
+ 370               		.loc 1 141 0
+ 371 0060 E091 0000 		lds r30,slave_buffer_pos
+ 372 0064 F0E0      		ldi r31,0
+ 373 0066 8091 BB00 		lds r24,187
+ 374 006a E050      		subi r30,lo8(-(i2c_slave_buffer))
+ 375 006c F040      		sbci r31,hi8(-(i2c_slave_buffer))
+ 376 006e 8083      		st Z,r24
+ 377 0070 00C0      		rjmp .L44
+ 378               	.L33:
+ 142:keyboards/lily58/i2c.c ****         BUFFER_POS_INC();
+ 143:keyboards/lily58/i2c.c ****       }
+ 144:keyboards/lily58/i2c.c ****       break;
+ 145:keyboards/lily58/i2c.c **** 
+ 146:keyboards/lily58/i2c.c ****     case TW_ST_SLA_ACK:
+ 147:keyboards/lily58/i2c.c ****     case TW_ST_DATA_ACK:
+ 148:keyboards/lily58/i2c.c ****       // master has addressed this device as a slave transmitter and is
+ 149:keyboards/lily58/i2c.c ****       // requesting data.
+ 150:keyboards/lily58/i2c.c ****       TWDR = i2c_slave_buffer[slave_buffer_pos];
+ 379               		.loc 1 150 0
+ 380 0072 E091 0000 		lds r30,slave_buffer_pos
+ 381 0076 F0E0      		ldi r31,0
+ 382 0078 E050      		subi r30,lo8(-(i2c_slave_buffer))
+ 383 007a F040      		sbci r31,hi8(-(i2c_slave_buffer))
+ 384 007c 8081      		ld r24,Z
+ 385 007e 8093 BB00 		sts 187,r24
+ 386               	.L44:
+ 151:keyboards/lily58/i2c.c ****       BUFFER_POS_INC();
+ 387               		.loc 1 151 0
+ 388 0082 8091 0000 		lds r24,slave_buffer_pos
+ 389 0086 90E0      		ldi r25,0
+ 390 0088 0196      		adiw r24,1
+ 391 008a 8F70      		andi r24,15
+ 392 008c 9927      		clr r25
+ 393 008e 8093 0000 		sts slave_buffer_pos,r24
+ 394 0092 00C0      		rjmp .L36
+ 395               	.L31:
+ 152:keyboards/lily58/i2c.c ****       break;
+ 153:keyboards/lily58/i2c.c **** 
+ 154:keyboards/lily58/i2c.c ****     case TW_BUS_ERROR: // something went wrong, reset twi state
+ 155:keyboards/lily58/i2c.c ****       TWCR = 0;
+ 396               		.loc 1 155 0
+ 397 0094 1092 BC00 		sts 188,__zero_reg__
+ 398               	.L36:
+ 119:keyboards/lily58/i2c.c ****   switch(TW_STATUS) {
+ 399               		.loc 1 119 0
+ 400 0098 81E0      		ldi r24,lo8(1)
+ 401               	.LVL26:
+ 402               	.L28:
+ 156:keyboards/lily58/i2c.c ****     default:
+ 157:keyboards/lily58/i2c.c ****       break;
+ 158:keyboards/lily58/i2c.c ****   }
+ 159:keyboards/lily58/i2c.c ****   // Reset everything, so we are ready for the next TWI interrupt
+ 160:keyboards/lily58/i2c.c ****   TWCR |= (1<<TWIE) | (1<<TWINT) | (ack<<TWEA) | (1<<TWEN);
+ 403               		.loc 1 160 0
+ 404 009a 9091 BC00 		lds r25,188
+ 405 009e 9568      		ori r25,lo8(-123)
+ 406 00a0 8295      		swap r24
+ 407               	.LVL27:
+ 408 00a2 880F      		lsl r24
+ 409 00a4 880F      		lsl r24
+ 410 00a6 807C      		andi r24,lo8(-64)
+ 411 00a8 892B      		or r24,r25
+ 412 00aa 8093 BC00 		sts 188,r24
+ 413               	/* epilogue start */
+ 161:keyboards/lily58/i2c.c **** }
+ 414               		.loc 1 161 0
+ 415 00ae FF91      		pop r31
+ 416 00b0 EF91      		pop r30
+ 417 00b2 9F91      		pop r25
+ 418 00b4 8F91      		pop r24
+ 419 00b6 0F90      		pop r0
+ 420 00b8 0FBE      		out __SREG__,r0
+ 421 00ba 0F90      		pop r0
+ 422 00bc 1F90      		pop r1
+ 423 00be 1895      		reti
+ 424               		.cfi_endproc
+ 425               	.LFE14:
+ 427               		.section	.bss.slave_has_register_set,"aw",@nobits
+ 430               	slave_has_register_set:
+ 431 0000 00        		.zero	1
+ 432               		.section	.bss.slave_buffer_pos,"aw",@nobits
+ 435               	slave_buffer_pos:
+ 436 0000 00        		.zero	1
+ 437               		.comm	i2c_slave_buffer,16,1
+ 438               		.text
+ 439               	.Letext0:
+ 440               		.file 2 "/usr/lib/avr/include/stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 i2c.c
+     /tmp/ccn2bL54.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccn2bL54.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccn2bL54.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccn2bL54.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccn2bL54.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccn2bL54.s:12     .text.i2c_delay:0000000000000000 i2c_delay
+     /tmp/ccn2bL54.s:43     .text.i2c_master_init:0000000000000000 i2c_master_init
+     /tmp/ccn2bL54.s:63     .text.i2c_master_start:0000000000000000 i2c_master_start
+     /tmp/ccn2bL54.s:144    .text.i2c_master_stop:0000000000000000 i2c_master_stop
+     /tmp/ccn2bL54.s:177    .text.i2c_master_write:0000000000000000 i2c_master_write
+     /tmp/ccn2bL54.s:212    .text.i2c_master_read:0000000000000000 i2c_master_read
+     /tmp/ccn2bL54.s:244    .text.i2c_reset_state:0000000000000000 i2c_reset_state
+     /tmp/ccn2bL54.s:261    .text.i2c_slave_init:0000000000000000 i2c_slave_init
+     /tmp/ccn2bL54.s:284    .text.__vector_36:0000000000000000 __vector_36
+     /tmp/ccn2bL54.s:430    .bss.slave_has_register_set:0000000000000000 slave_has_register_set
+     /tmp/ccn2bL54.s:435    .bss.slave_buffer_pos:0000000000000000 slave_buffer_pos
+                            *COM*:0000000000000010 i2c_slave_buffer
+
+UNDEFINED SYMBOLS
+__do_clear_bss

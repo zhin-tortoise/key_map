@@ -1,0 +1,222 @@
+   1               		.file	"layer_state_reader.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.rodata.str1.1,"aMS",@progbits,1
+  11               	.LC0:
+  12 0000 4C61 7965 		.string	"Layer: Default"
+  12      723A 2044 
+  12      6566 6175 
+  12      6C74 00
+  13               	.LC1:
+  14 000f 4C61 7965 		.string	"Layer: Raise"
+  14      723A 2052 
+  14      6169 7365 
+  14      00
+  15               	.LC2:
+  16 001c 4C61 7965 		.string	"Layer: Lower"
+  16      723A 204C 
+  16      6F77 6572 
+  16      00
+  17               	.LC3:
+  18 0029 4C61 7965 		.string	"Layer: Adjust"
+  18      723A 2041 
+  18      646A 7573 
+  18      7400 
+  19               	.LC4:
+  20 0037 4C61 7965 		.string	"Layer: Undef-%ld"
+  20      723A 2055 
+  20      6E64 6566 
+  20      2D25 6C64 
+  20      00
+  21               		.section	.text.read_layer_state,"ax",@progbits
+  22               	.global	read_layer_state
+  24               	read_layer_state:
+  25               	.LFB19:
+  26               		.file 1 "keyboards/lily58/lib/layer_state_reader.c"
+   1:keyboards/lily58/lib/layer_state_reader.c **** 
+   2:keyboards/lily58/lib/layer_state_reader.c **** #include QMK_KEYBOARD_H
+   3:keyboards/lily58/lib/layer_state_reader.c **** #include <stdio.h>
+   4:keyboards/lily58/lib/layer_state_reader.c **** #include "lily58.h"
+   5:keyboards/lily58/lib/layer_state_reader.c **** 
+   6:keyboards/lily58/lib/layer_state_reader.c **** #define L_BASE 0
+   7:keyboards/lily58/lib/layer_state_reader.c **** #define L_LOWER 2
+   8:keyboards/lily58/lib/layer_state_reader.c **** #define L_RAISE 4
+   9:keyboards/lily58/lib/layer_state_reader.c **** #define L_ADJUST 65536
+  10:keyboards/lily58/lib/layer_state_reader.c **** #define L_ADJUST_TRI 65542
+  11:keyboards/lily58/lib/layer_state_reader.c **** 
+  12:keyboards/lily58/lib/layer_state_reader.c **** char layer_state_str[24];
+  13:keyboards/lily58/lib/layer_state_reader.c **** 
+  14:keyboards/lily58/lib/layer_state_reader.c **** const char *read_layer_state(void) {
+  27               		.loc 1 14 0
+  28               		.cfi_startproc
+  29               	/* prologue: function */
+  30               	/* frame size = 0 */
+  31               	/* stack size = 0 */
+  32               	.L__stack_usage = 0
+  15:keyboards/lily58/lib/layer_state_reader.c ****   switch (layer_state)
+  33               		.loc 1 15 0
+  34 0000 8091 0000 		lds r24,layer_state
+  35 0004 9091 0000 		lds r25,layer_state+1
+  36 0008 A091 0000 		lds r26,layer_state+2
+  37 000c B091 0000 		lds r27,layer_state+3
+  38 0010 8430      		cpi r24,4
+  39 0012 9105      		cpc r25,__zero_reg__
+  40 0014 A105      		cpc r26,__zero_reg__
+  41 0016 B105      		cpc r27,__zero_reg__
+  42 0018 01F0      		breq .L3
+  43 001a 00F4      		brsh .L4
+  44 001c 0097      		sbiw r24,0
+  45 001e A105      		cpc r26,__zero_reg__
+  46 0020 B105      		cpc r27,__zero_reg__
+  47 0022 01F0      		breq .L5
+  48 0024 8230      		cpi r24,2
+  49 0026 9105      		cpc r25,__zero_reg__
+  50 0028 A105      		cpc r26,__zero_reg__
+  51 002a B105      		cpc r27,__zero_reg__
+  52 002c 01F4      		brne .L2
+  16:keyboards/lily58/lib/layer_state_reader.c ****   {
+  17:keyboards/lily58/lib/layer_state_reader.c ****   case L_BASE:
+  18:keyboards/lily58/lib/layer_state_reader.c ****     snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Default");
+  19:keyboards/lily58/lib/layer_state_reader.c ****     break;
+  20:keyboards/lily58/lib/layer_state_reader.c ****   case L_RAISE:
+  21:keyboards/lily58/lib/layer_state_reader.c ****     snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Raise");
+  22:keyboards/lily58/lib/layer_state_reader.c ****     break;
+  23:keyboards/lily58/lib/layer_state_reader.c ****   case L_LOWER:
+  24:keyboards/lily58/lib/layer_state_reader.c ****     snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Lower");
+  53               		.loc 1 24 0
+  54 002e 60E0      		ldi r22,lo8(.LC2)
+  55 0030 70E0      		ldi r23,hi8(.LC2)
+  56 0032 00C0      		rjmp .L15
+  57               	.L4:
+  15:keyboards/lily58/lib/layer_state_reader.c ****   switch (layer_state)
+  58               		.loc 1 15 0
+  59 0034 0097      		sbiw r24,0
+  60 0036 21E0      		ldi r18,1
+  61 0038 A207      		cpc r26,r18
+  62 003a B105      		cpc r27,__zero_reg__
+  63 003c 01F0      		breq .L7
+  64 003e 8630      		cpi r24,6
+  65 0040 9105      		cpc r25,__zero_reg__
+  66 0042 21E0      		ldi r18,1
+  67 0044 A207      		cpc r26,r18
+  68 0046 B105      		cpc r27,__zero_reg__
+  69 0048 01F0      		breq .L7
+  70 004a 00C0      		rjmp .L2
+  71               	.L5:
+  18:keyboards/lily58/lib/layer_state_reader.c ****     break;
+  72               		.loc 1 18 0
+  73 004c 60E0      		ldi r22,lo8(.LC0)
+  74 004e 70E0      		ldi r23,hi8(.LC0)
+  75 0050 00C0      		rjmp .L15
+  76               	.L3:
+  21:keyboards/lily58/lib/layer_state_reader.c ****     break;
+  77               		.loc 1 21 0
+  78 0052 60E0      		ldi r22,lo8(.LC1)
+  79 0054 70E0      		ldi r23,hi8(.LC1)
+  80               	.L15:
+  81 0056 80E0      		ldi r24,lo8(layer_state_str)
+  82 0058 90E0      		ldi r25,hi8(layer_state_str)
+  83 005a 0E94 0000 		call strcpy
+  22:keyboards/lily58/lib/layer_state_reader.c ****   case L_LOWER:
+  84               		.loc 1 22 0
+  85 005e 00C0      		rjmp .L8
+  86               	.L7:
+  25:keyboards/lily58/lib/layer_state_reader.c ****     break;
+  26:keyboards/lily58/lib/layer_state_reader.c ****   case L_ADJUST:
+  27:keyboards/lily58/lib/layer_state_reader.c ****   case L_ADJUST_TRI:
+  28:keyboards/lily58/lib/layer_state_reader.c ****     snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Adjust");
+  87               		.loc 1 28 0
+  88 0060 60E0      		ldi r22,lo8(.LC3)
+  89 0062 70E0      		ldi r23,hi8(.LC3)
+  90 0064 00C0      		rjmp .L15
+  91               	.L2:
+  29:keyboards/lily58/lib/layer_state_reader.c ****     break;
+  30:keyboards/lily58/lib/layer_state_reader.c ****   default:
+  31:keyboards/lily58/lib/layer_state_reader.c ****     snprintf(layer_state_str, sizeof(layer_state_str), "Layer: Undef-%ld", layer_state);
+  92               		.loc 1 31 0
+  93 0066 BF93      		push r27
+  94               	.LCFI0:
+  95               		.cfi_def_cfa_offset 3
+  96 0068 AF93      		push r26
+  97               	.LCFI1:
+  98               		.cfi_def_cfa_offset 4
+  99 006a 9F93      		push r25
+ 100               	.LCFI2:
+ 101               		.cfi_def_cfa_offset 5
+ 102 006c 8F93      		push r24
+ 103               	.LCFI3:
+ 104               		.cfi_def_cfa_offset 6
+ 105 006e 80E0      		ldi r24,lo8(.LC4)
+ 106 0070 90E0      		ldi r25,hi8(.LC4)
+ 107 0072 9F93      		push r25
+ 108               	.LCFI4:
+ 109               		.cfi_def_cfa_offset 7
+ 110 0074 8F93      		push r24
+ 111               	.LCFI5:
+ 112               		.cfi_def_cfa_offset 8
+ 113 0076 1F92      		push __zero_reg__
+ 114               	.LCFI6:
+ 115               		.cfi_def_cfa_offset 9
+ 116 0078 88E1      		ldi r24,lo8(24)
+ 117 007a 8F93      		push r24
+ 118               	.LCFI7:
+ 119               		.cfi_def_cfa_offset 10
+ 120 007c 80E0      		ldi r24,lo8(layer_state_str)
+ 121 007e 90E0      		ldi r25,hi8(layer_state_str)
+ 122 0080 9F93      		push r25
+ 123               	.LCFI8:
+ 124               		.cfi_def_cfa_offset 11
+ 125 0082 8F93      		push r24
+ 126               	.LCFI9:
+ 127               		.cfi_def_cfa_offset 12
+ 128 0084 0E94 0000 		call snprintf
+ 129 0088 8DB7      		in r24,__SP_L__
+ 130 008a 9EB7      		in r25,__SP_H__
+ 131 008c 0A96      		adiw r24,10
+ 132 008e 0FB6      		in __tmp_reg__,__SREG__
+ 133 0090 F894      		cli
+ 134 0092 9EBF      		out __SP_H__,r25
+ 135 0094 0FBE      		out __SREG__,__tmp_reg__
+ 136 0096 8DBF      		out __SP_L__,r24
+ 137               	.LCFI10:
+ 138               		.cfi_def_cfa_offset 2
+ 139               	.L8:
+  32:keyboards/lily58/lib/layer_state_reader.c ****   }
+  33:keyboards/lily58/lib/layer_state_reader.c **** 
+  34:keyboards/lily58/lib/layer_state_reader.c ****   return layer_state_str;
+  35:keyboards/lily58/lib/layer_state_reader.c **** }
+ 140               		.loc 1 35 0
+ 141 0098 80E0      		ldi r24,lo8(layer_state_str)
+ 142 009a 90E0      		ldi r25,hi8(layer_state_str)
+ 143 009c 0895      		ret
+ 144               		.cfi_endproc
+ 145               	.LFE19:
+ 147               		.comm	layer_state_str,24,1
+ 148               		.text
+ 149               	.Letext0:
+ 150               		.file 2 "/usr/lib/avr/include/stdint.h"
+ 151               		.file 3 "tmk_core/common/report.h"
+ 152               		.file 4 "quantum/quantum.h"
+ 153               		.file 5 "tmk_core/common/action_util.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 layer_state_reader.c
+     /tmp/ccSL6TBv.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccSL6TBv.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccSL6TBv.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccSL6TBv.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccSL6TBv.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccSL6TBv.s:24     .text.read_layer_state:0000000000000000 read_layer_state
+                            *COM*:0000000000000018 layer_state_str
+
+UNDEFINED SYMBOLS
+layer_state
+strcpy
+snprintf
+__do_copy_data
+__do_clear_bss

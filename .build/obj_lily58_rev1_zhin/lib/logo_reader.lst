@@ -1,0 +1,120 @@
+   1               		.file	"logo_reader.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.read_logo,"ax",@progbits
+  11               	.global	read_logo
+  13               	read_logo:
+  14               	.LFB18:
+  15               		.file 1 "keyboards/lily58/lib/logo_reader.c"
+   1:keyboards/lily58/lib/logo_reader.c **** #include "lily58.h"
+   2:keyboards/lily58/lib/logo_reader.c **** 
+   3:keyboards/lily58/lib/logo_reader.c **** const char *read_logo(void) {
+  16               		.loc 1 3 0
+  17               		.cfi_startproc
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+   4:keyboards/lily58/lib/logo_reader.c ****   static char logo[] = {
+   5:keyboards/lily58/lib/logo_reader.c ****       0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8
+   6:keyboards/lily58/lib/logo_reader.c ****       0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xa
+   7:keyboards/lily58/lib/logo_reader.c ****       0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, 0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xc
+   8:keyboards/lily58/lib/logo_reader.c ****       0};
+   9:keyboards/lily58/lib/logo_reader.c **** 
+  10:keyboards/lily58/lib/logo_reader.c ****   return logo;
+  11:keyboards/lily58/lib/logo_reader.c **** }
+  22               		.loc 1 11 0
+  23 0000 80E0      		ldi r24,lo8(logo.3222)
+  24 0002 90E0      		ldi r25,hi8(logo.3222)
+  25 0004 0895      		ret
+  26               		.cfi_endproc
+  27               	.LFE18:
+  29               		.section	.data.logo.3222,"aw",@progbits
+  32               	logo.3222:
+  33 0000 80        		.byte	-128
+  34 0001 81        		.byte	-127
+  35 0002 82        		.byte	-126
+  36 0003 83        		.byte	-125
+  37 0004 84        		.byte	-124
+  38 0005 85        		.byte	-123
+  39 0006 86        		.byte	-122
+  40 0007 87        		.byte	-121
+  41 0008 88        		.byte	-120
+  42 0009 89        		.byte	-119
+  43 000a 8A        		.byte	-118
+  44 000b 8B        		.byte	-117
+  45 000c 8C        		.byte	-116
+  46 000d 8D        		.byte	-115
+  47 000e 8E        		.byte	-114
+  48 000f 8F        		.byte	-113
+  49 0010 90        		.byte	-112
+  50 0011 91        		.byte	-111
+  51 0012 92        		.byte	-110
+  52 0013 93        		.byte	-109
+  53 0014 94        		.byte	-108
+  54 0015 A0        		.byte	-96
+  55 0016 A1        		.byte	-95
+  56 0017 A2        		.byte	-94
+  57 0018 A3        		.byte	-93
+  58 0019 A4        		.byte	-92
+  59 001a A5        		.byte	-91
+  60 001b A6        		.byte	-90
+  61 001c A7        		.byte	-89
+  62 001d A8        		.byte	-88
+  63 001e A9        		.byte	-87
+  64 001f AA        		.byte	-86
+  65 0020 AB        		.byte	-85
+  66 0021 AC        		.byte	-84
+  67 0022 AD        		.byte	-83
+  68 0023 AE        		.byte	-82
+  69 0024 AF        		.byte	-81
+  70 0025 B0        		.byte	-80
+  71 0026 B1        		.byte	-79
+  72 0027 B2        		.byte	-78
+  73 0028 B3        		.byte	-77
+  74 0029 B4        		.byte	-76
+  75 002a C0        		.byte	-64
+  76 002b C1        		.byte	-63
+  77 002c C2        		.byte	-62
+  78 002d C3        		.byte	-61
+  79 002e C4        		.byte	-60
+  80 002f C5        		.byte	-59
+  81 0030 C6        		.byte	-58
+  82 0031 C7        		.byte	-57
+  83 0032 C8        		.byte	-56
+  84 0033 C9        		.byte	-55
+  85 0034 CA        		.byte	-54
+  86 0035 CB        		.byte	-53
+  87 0036 CC        		.byte	-52
+  88 0037 CD        		.byte	-51
+  89 0038 CE        		.byte	-50
+  90 0039 CF        		.byte	-49
+  91 003a D0        		.byte	-48
+  92 003b D1        		.byte	-47
+  93 003c D2        		.byte	-46
+  94 003d D3        		.byte	-45
+  95 003e D4        		.byte	-44
+  96 003f 00        		.byte	0
+  97               		.text
+  98               	.Letext0:
+  99               		.file 2 "tmk_core/common/report.h"
+ 100               		.file 3 "/usr/lib/avr/include/stdint.h"
+ 101               		.file 4 "tmk_core/common/action_util.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 logo_reader.c
+     /tmp/ccHAuvcv.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/ccHAuvcv.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/ccHAuvcv.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/ccHAuvcv.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/ccHAuvcv.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/ccHAuvcv.s:13     .text.read_logo:0000000000000000 read_logo
+     /tmp/ccHAuvcv.s:32     .data.logo.3222:0000000000000000 logo.3222
+
+UNDEFINED SYMBOLS
+__do_copy_data

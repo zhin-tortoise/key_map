@@ -1,0 +1,101 @@
+   1               		.file	"lily58.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               		.section	.text.process_record_kb,"ax",@progbits
+  11               	.global	process_record_kb
+  13               	process_record_kb:
+  14               	.LFB22:
+  15               		.file 1 "keyboards/lily58/lily58.c"
+   1:keyboards/lily58/lily58.c **** #include "lily58.h"
+   2:keyboards/lily58/lily58.c **** #include "ssd1306.h"
+   3:keyboards/lily58/lily58.c **** 
+   4:keyboards/lily58/lily58.c **** bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+  16               		.loc 1 4 0
+  17               		.cfi_startproc
+  18               	.LVL0:
+  19 0000 0F93      		push r16
+  20               	.LCFI0:
+  21               		.cfi_def_cfa_offset 3
+  22               		.cfi_offset 16, -2
+  23 0002 1F93      		push r17
+  24               	.LCFI1:
+  25               		.cfi_def_cfa_offset 4
+  26               		.cfi_offset 17, -3
+  27 0004 CF93      		push r28
+  28               	.LCFI2:
+  29               		.cfi_def_cfa_offset 5
+  30               		.cfi_offset 28, -4
+  31 0006 DF93      		push r29
+  32               	.LCFI3:
+  33               		.cfi_def_cfa_offset 6
+  34               		.cfi_offset 29, -5
+  35               	/* prologue: function */
+  36               	/* frame size = 0 */
+  37               	/* stack size = 4 */
+  38               	.L__stack_usage = 4
+  39 0008 EC01      		movw r28,r24
+  40 000a 8B01      		movw r16,r22
+   5:keyboards/lily58/lily58.c **** #ifdef SSD1306OLED
+   6:keyboards/lily58/lily58.c ****   return process_record_gfx(keycode,record) && process_record_user(keycode, record);
+  41               		.loc 1 6 0
+  42 000c 0E94 0000 		call process_record_gfx
+  43               	.LVL1:
+  44 0010 8823      		tst r24
+  45 0012 01F0      		breq .L3
+  46               		.loc 1 6 0 is_stmt 0 discriminator 1
+  47 0014 B801      		movw r22,r16
+  48 0016 CE01      		movw r24,r28
+  49 0018 0E94 0000 		call process_record_user
+  50               	.LVL2:
+  51 001c 00C0      		rjmp .L2
+  52               	.L3:
+  53               		.loc 1 6 0
+  54 001e 80E0      		ldi r24,0
+  55 0020 90E0      		ldi r25,0
+  56               	.L2:
+   7:keyboards/lily58/lily58.c **** #else
+   8:keyboards/lily58/lily58.c ****   return process_record_user(keycode, record);
+   9:keyboards/lily58/lily58.c **** #endif
+  10:keyboards/lily58/lily58.c **** }...
+  57               		.loc 1 10 0 is_stmt 1 discriminator 6
+  58 0022 8170      		andi r24,lo8(1)
+  59               	/* epilogue start */
+  60 0024 DF91      		pop r29
+  61 0026 CF91      		pop r28
+  62               	.LVL3:
+  63 0028 1F91      		pop r17
+  64 002a 0F91      		pop r16
+  65               	.LVL4:
+  66 002c 0895      		ret
+  67               		.cfi_endproc
+  68               	.LFE22:
+  70               		.comm	display,87,1
+  71               		.text
+  72               	.Letext0:
+  73               		.file 2 "/usr/lib/avr/include/stdint.h"
+  74               		.file 3 "tmk_core/common/keyboard.h"
+  75               		.file 4 "tmk_core/common/action.h"
+  76               		.file 5 "tmk_core/common/report.h"
+  77               		.file 6 "keyboards/lily58/ssd1306.h"
+  78               		.file 7 "tmk_core/common/action_util.h"
+  79               		.file 8 "quantum/quantum.h"
+DEFINED SYMBOLS
+                            *ABS*:0000000000000000 lily58.c
+     /tmp/cckOMtiA.s:2      *ABS*:000000000000003e __SP_H__
+     /tmp/cckOMtiA.s:3      *ABS*:000000000000003d __SP_L__
+     /tmp/cckOMtiA.s:4      *ABS*:000000000000003f __SREG__
+     /tmp/cckOMtiA.s:5      *ABS*:0000000000000000 __tmp_reg__
+     /tmp/cckOMtiA.s:6      *ABS*:0000000000000001 __zero_reg__
+     /tmp/cckOMtiA.s:13     .text.process_record_kb:0000000000000000 process_record_kb
+                            *COM*:0000000000000057 display
+
+UNDEFINED SYMBOLS
+process_record_gfx
+process_record_user
+__do_clear_bss
